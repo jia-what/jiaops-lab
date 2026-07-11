@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs & runtime
+*.log
+logs/
+tmp/
+data/
+!data/.gitkeep
+
+# Docker / Compose overrides (local secrets)
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Build / coverage
+dist/
+build/
+.coverage
+htmlcov/
+
+# Obsidian / local notes accidentally copied in
+.obsidian/
