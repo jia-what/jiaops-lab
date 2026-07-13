@@ -1,26 +1,43 @@
-# 运维工单应用（占位）
+# 运维工单应用（MVP）
 
-本目录将实现 JiaOps Lab 的业务载体：**运维工单系统**。
+最小功能：创建工单、列表、改状态；数据存 MySQL；提供 `/health`。
 
-## 计划中的最小功能（MVP）
+## 结构
 
-- 创建工单（标题、描述、优先级）
-- 工单列表与详情
-- 更新状态：`open` → `in_progress` → `resolved` → `closed`
-- 健康检查接口 `/health`（供监控与编排探活）
+```text
+app/
+├── app.py              # Flask 主程序
+├── requirements.txt    # 依赖
+├── .env.example        # 环境变量模板
+├── .env                # 本地密钥（勿提交）
+└── templates/
+    └── index.html      # 简单页面
+```
 
-## 技术选型（第二阶段确定）
+## 在 CentOS 上运行
 
-倾向：Python（Flask 或 FastAPI）+ MySQL + Redis。  
-当前阶段先完成 Linux 基线与仓库结构，不急着写业务代码。
+```bash
+cd /opt/jiaops-lab
+source .venv/bin/activate   # 若 venv 不在此目录，先进入正确 venv
 
-## 状态字段约定（草案）
+# 放入代码后：
+cd /opt/jiaops-lab/app      # 或你放置 app.py 的目录
+cp .env.example .env        # 按需改密码
+pip install -r requirements.txt
+python app.py
+```
 
-| 字段 | 说明 |
-|------|------|
-| id | 工单 ID |
-| title | 标题 |
-| description | 描述 |
-| priority | low / medium / high / critical |
-| status | open / in_progress / resolved / closed |
-| created_at / updated_at | 时间戳 |
+访问：
+
+- 本机：`http://127.0.0.1:5000/`
+- 局域网：`http://192.168.153.8:5000/`
+- 健康检查：`http://192.168.153.8:5000/health`
+
+## 接口一览
+
+| 方法 | 路径 | 作用 |
+|------|------|------|
+| GET | `/health` | 健康检查（含数据库） |
+| GET | `/` | 工单页 |
+| POST | `/tickets` | 创建工单 |
+| POST | `/tickets/<id>/status` | 更新状态 |

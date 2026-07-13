@@ -51,7 +51,7 @@ AI集成运维
 
 github远程仓库项目地址：https://github.com/jia-what/jiaops-lab.git
 
-目前设备：VM上的centos7虚拟机 40G储存 4核CPU 8G内存 用MobaXterm进行远程连接
+目前设备：VM上的centos7虚拟机 40G储存 4核CPU 8G内存 用MobaXterm进行远程连接 虚拟机IP：192.168.153.8
 
 目前进度：
 - 大致过完了第一阶段的 Linux 命令基础（笔记待入库）
@@ -66,3 +66,12 @@ Linux，Bash，Git，GitHub，SSH，Nginx，MySQL，Redis，Docker，Docker Comp
 项目定位：一个面向中小型业务系统的云原生自动化运维平台，支持 CI/CD、容器部署、监控告警、日志分析以及 AI 故障诊断
 
 业务载体：运维工单（创建 / 处理 / 关单），复杂度放在平台层而非业务功能
+现在     工单应用 + MySQL + Nginx（手动部署）
+   ↓
+接着     + Redis（可选）+ Docker Compose 一键部署
+   ↓
+再接着   + Jenkins CI/CD
+   ↓
+再接着   + Prometheus / Grafana 监控告警
+   ↓
+最后     + Kubernetes +（可选）AI 辅助排障

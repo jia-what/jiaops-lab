@@ -20,11 +20,11 @@
 
 ```text
 jiaops-lab/
-├── app/                 # 运维工单业务应用（后续实现）
+├── app/                 # 运维工单业务应用（Flask MVP）
 ├── deploy/
-│   ├── compose/         # Docker Compose 编排
+│   ├── compose/         # Docker Compose 编排（下一步）
 │   ├── nginx/           # 反向代理配置
-│   └── k8s/             # Kubernetes 清单（第四阶段）
+│   └── k8s/             # Kubernetes 清单（后期）
 ├── monitoring/          # Prometheus / Grafana / Alertmanager
 ├── cicd/                # Jenkinsfile 与流水线说明
 ├── scripts/             # 运维脚本（备份、巡检、初始化等）
@@ -34,21 +34,36 @@ jiaops-lab/
 ## 分阶段计划
 
 1. **基线**：仓库骨架 + CentOS 虚拟机环境 + 知识库笔记  
-2. **容器化**：工单应用 + Nginx + MySQL + Redis，Compose 一键启动  
-3. **交付与可观测**：Jenkins 流水线 + Prometheus / Grafana 监控告警  
-4. **云原生**：迁移到 Kubernetes，补充 Terraform 与 AI 运维能力  
+2. **工单 MVP（当前已完成手动部署）**：App + MySQL + Nginx 反代  
+3. **容器化**：Docker Compose 一键启动（+ Redis 可选）  
+4. **交付与可观测**：Jenkins + Prometheus / Grafana  
+5. **云原生 / 上云 / AIOps**：Kubernetes、云厂商、AI 辅助排障  
 
 ## 当前进度
 
 - [x] 确定业务载体：运维工单  
 - [x] 初始化仓库与目录骨架  
 - [x] CentOS 7 虚拟机基线检查与文档化（见 `docs/vm-setup.md`）  
-- [ ] Linux 第一阶段笔记入库  
-- [ ] 工单应用最小可运行版本（MVP）  
+- [x] 裸机安装 MySQL / Nginx / Redis  
+- [x] 工单应用 MVP（Flask + MySQL）  
+- [x] Nginx 反代到应用（`:80` → `:5000`）  
+- [ ] Docker Compose 一键部署  
 
-## 本地开发（占位）
+## 手动运行（MVP）
 
-后续第二阶段会提供：
+虚拟机上（示例）：
+
+```bash
+cd /opt/jiaops-lab/app
+source ../.venv/bin/activate
+cp .env.example .env   # 填写数据库密码
+python app.py          # 默认 0.0.0.0:5000
+```
+
+Nginx 配置见 `deploy/nginx/jiaops.conf`。  
+访问：`http://<虚拟机IP>/` ，健康检查：`/health`
+
+## 本地开发（下一步）
 
 ```bash
 docker compose -f deploy/compose/docker-compose.yml up -d
