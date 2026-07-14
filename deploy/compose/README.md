@@ -33,10 +33,13 @@ docker compose ps
 curl -s http://127.0.0.1:8080/health
 ```
 
-可选 Redis：
+可选 Redis（app 会连 Redis 缓存工单列表，`/health` 含 redis 状态）：
 
 ```bash
-docker compose --profile with-redis up -d
+# .env 中需有 REDIS_HOST=redis（.env.example 已含）
+docker compose --profile with-redis up -d --build
+curl -s http://127.0.0.1:8080/health
+# 期望：{"status":"ok","db":1,"redis":"ok",...}
 ```
 
 ## 常用命令
