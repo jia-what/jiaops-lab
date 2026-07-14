@@ -1,12 +1,13 @@
 # Deploy · Nginx
 
-当前阶段：把 80 端口流量反代到本机 Flask（`127.0.0.1:5000`）。
-
 ## 文件
 
-- `jiaops.conf` → 复制到虚拟机 `/etc/nginx/conf.d/jiaops.conf`
+| 文件 | 用途 |
+|------|------|
+| `jiaops.conf` | **裸机 Phase 2**：复制到 `/etc/nginx/conf.d/jiaops.conf`，反代 `127.0.0.1:5000` |
+| `jiaops-docker.conf` | **Compose Phase 3**：挂载为容器 `default.conf`，反代 `app:5000` |
 
-## 操作摘要
+## 裸机操作摘要
 
 ```bash
 nginx -t
@@ -15,4 +16,8 @@ curl -I http://127.0.0.1/
 curl -I http://192.168.153.8/
 ```
 
-浏览器访问：`http://192.168.153.8/`（不必再写 :5000）
+浏览器：`http://192.168.153.8/`（不必写 :5000）
+
+## Compose
+
+见 `deploy/compose/README.md`。默认对外 `http://IP:8080/`。
