@@ -1,0 +1,20 @@
+[Unit]
+Description=JiaOps Ticket App (Flask)
+After=network.target mysqld.service
+Wants=mysqld.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/jiaops-lab/app
+EnvironmentFile=/opt/jiaops-lab/app/.env
+ExecStart=/opt/jiaops-lab/.venv/bin/python /opt/jiaops-lab/app/app.py
+Restart=on-failure
+RestartSec=3
+
+# 方便 journalctl 看日志
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
