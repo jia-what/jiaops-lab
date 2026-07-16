@@ -1,8 +1,0 @@
-# Compose 编排（占位）
-
-第二阶段在此放置 `docker-compose.yml`，预期服务：
-
-- `app` — 工单应用
-- `nginx` — 反向代理
-- `mysql` — 元数据
-- `redis` — 缓存 / 会话（可选）

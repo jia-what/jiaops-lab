@@ -1,7 +1,9 @@
+import json
 import os
 from datetime import datetime
 
 import pymysql
+import redis
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, url_for
 
@@ -11,6 +13,8 @@ app = Flask(__name__)
 
 PRIORITIES = ("low", "medium", "high", "critical")
 STATUSES = ("open", "in_progress", "resolved", "closed")
+TICKETS_CACHE_KEY = "jiaops:tickets:list"
+TICKETS_CACHE_TTL = 30
 
 
 def get_db():
@@ -27,22 +31,41 @@ def get_db():
     )
 
 
-@app.get("/health")
-def health():
-    """给以后监控 / Nginx / Compose 探活用。"""
+def get_redis():
+    """REDIS_HOST 为空时不连 Redis（裸机 / 未启 redis profile 时兼容）。"""
+    host = (os.getenv("REDIS_HOST") or "").strip()
+    if not host:
+        return None
+    return redis.Redis(
+        host=host,
+        port=int(os.getenv("REDIS_PORT", "6379")),
+        decode_responses=True,
+        socket_connect_timeout=2,
+    )
+
+
+def redis_status():
+    client = get_redis()
+    if client is None:
+        return "skipped"
     try:
-        conn = get_db()
-        with conn.cursor() as cur:
-            cur.execute("SELECT 1 AS ok")
-            row = cur.fetchone()
-        conn.close()
-        return {"status": "ok", "db": row["ok"], "time": datetime.now().isoformat()}, 200
+        client.ping()
+        return "ok"
     except Exception as exc:
-        return {"status": "error", "detail": str(exc)}, 500
+        return f"error: {exc}"
 
 
-@app.get("/")
-def index():
+def invalidate_tickets_cache():
+    client = get_redis()
+    if client is None:
+        return
+    try:
+        client.delete(TICKETS_CACHE_KEY)
+    except Exception:
+        pass
+
+
+def fetch_tickets_from_db():
     conn = get_db()
     with conn.cursor() as cur:
         cur.execute(
@@ -54,6 +77,63 @@ def index():
         )
         tickets = cur.fetchall()
     conn.close()
+    return tickets
+
+
+def fetch_tickets():
+    """有 Redis 时缓存工单列表 30 秒；建单/改状态后会删缓存。"""
+    client = get_redis()
+    if client is not None:
+        try:
+            cached = client.get(TICKETS_CACHE_KEY)
+            if cached:
+                return json.loads(cached)
+        except Exception:
+            pass
+
+    tickets = fetch_tickets_from_db()
+
+    if client is not None:
+        try:
+            client.setex(
+                TICKETS_CACHE_KEY,
+                TICKETS_CACHE_TTL,
+                json.dumps(tickets, default=str),
+            )
+        except Exception:
+            pass
+
+    return tickets
+
+
+@app.get("/health")
+def health():
+    """给以后监控 / Nginx / Compose 探活用。"""
+    body = {"time": datetime.now().isoformat()}
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 AS ok")
+            row = cur.fetchone()
+        conn.close()
+        body["db"] = row["ok"]
+    except Exception as exc:
+        body["status"] = "error"
+        body["detail"] = str(exc)
+        return body, 500
+
+    body["redis"] = redis_status()
+    if body["redis"].startswith("error"):
+        body["status"] = "error"
+        return body, 500
+
+    body["status"] = "ok"
+    return body, 200
+
+
+@app.get("/")
+def index():
+    tickets = fetch_tickets()
     return render_template(
         "index.html",
         tickets=tickets,
@@ -83,6 +163,7 @@ def create_ticket():
             (title, description, priority),
         )
     conn.close()
+    invalidate_tickets_cache()
     return redirect(url_for("index"))
 
 
@@ -99,6 +180,7 @@ def update_status(ticket_id):
             (status, ticket_id),
         )
     conn.close()
+    invalidate_tickets_cache()
     return redirect(url_for("index"))
 
 

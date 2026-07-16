@@ -27,20 +27,27 @@
 | 磁盘 `/` | 已用 6%（1.9G / 35G），充足 |
 | Swap | 4G，未使用 |
 | 基础工具 | bash / vim / git / curl / wget / ss / systemctl 均有 |
-| Docker | 未安装（第二阶段再装） |
+| Docker | 未安装（当时）→ **2026-07-14 已装** Engine 26.1.4 + Compose v2.27.1 |
 | firewalld | 未处于 active（记录为 unknown/inactive） |
 | SELinux | Permissive |
 
 ## 结论
 
 虚拟机适合作为 JiaOps Lab 实验机：资源够用、网络与 DNS 正常、工具齐全。  
-下一阶段再安装 Docker；当前继续完成 Linux 第一阶段笔记入库即可。
+Docker 已安装并配置镜像加速；下一步用 Compose 一键部署（见 `deploy/compose/`）。
 
 ## 复跑基线
 
 ```bash
 bash ~/jiaops-lab/scripts/vm_baseline_check.sh
+# 或：bash /opt/jiaops-lab/scripts/vm_baseline_check.sh
 ```
+
+## Docker 备注（2026-07-14）
+
+- 镜像加速：`/etc/docker/daemon.json`（DaoCloud 等）
+- 裸机 MVP 与 Docker **并存**：Compose 验证用宿主机端口 `8080`
+- 安装笔记见 Obsidian：`02 Learning/Docker/安装Docker.md`
 
 ## 注意
 

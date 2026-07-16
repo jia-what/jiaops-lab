@@ -7,13 +7,17 @@
 ```text
 app/
 ├── app.py              # Flask 主程序
+├── Dockerfile          # 容器镜像（Phase 3）
+├── .dockerignore
 ├── requirements.txt    # 依赖
 ├── .env.example        # 环境变量模板
 ├── .env                # 本地密钥（勿提交）
+├── schema.sql          # 建表（Compose 首次初始化也会挂载）
 └── templates/
     └── index.html      # 简单页面
 ```
 
+容器运行见仓库根目录 README 与 `deploy/compose/README.md`。
 ## 在 CentOS 上运行
 
 ```bash

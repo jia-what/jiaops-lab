@@ -22,8 +22,8 @@
 jiaops-lab/
 ├── app/                 # 运维工单业务应用（Flask MVP）
 ├── deploy/
-│   ├── compose/         # Docker Compose 编排（下一步）
-│   ├── nginx/           # 反向代理配置
+│   ├── compose/         # Docker Compose 编排（Phase 3）
+│   ├── nginx/           # 反向代理（裸机 + Compose）
 │   └── k8s/             # Kubernetes 清单（后期）
 ├── monitoring/          # Prometheus / Grafana / Alertmanager
 ├── cicd/                # Jenkinsfile 与流水线说明
@@ -34,8 +34,8 @@ jiaops-lab/
 ## 分阶段计划
 
 1. **基线**：仓库骨架 + CentOS 虚拟机环境 + 知识库笔记  
-2. **工单 MVP（当前已完成手动部署）**：App + MySQL + Nginx 反代  
-3. **容器化**：Docker Compose 一键启动（+ Redis 可选）  
+2. **工单 MVP（已完成手动部署）**：App + MySQL + Nginx 反代  
+3. **容器化（进行中）**：Docker 已装；Compose 一键启动（+ Redis 可选）  
 4. **交付与可观测**：Jenkins + Prometheus / Grafana  
 5. **云原生 / 上云 / AIOps**：Kubernetes、云厂商、AI 辅助排障  
 
@@ -47,9 +47,10 @@ jiaops-lab/
 - [x] 裸机安装 MySQL / Nginx / Redis  
 - [x] 工单应用 MVP（Flask + MySQL）  
 - [x] Nginx 反代到应用（`:80` → `:5000`）  
-- [ ] Docker Compose 一键部署  
+- [x] Docker Engine + Compose 插件  
+- [ ] Docker Compose 一键部署（编排已落库，待虚拟机验证）  
 
-## 手动运行（MVP）
+## 手动运行（Phase 2 裸机 MVP）
 
 虚拟机上（示例）：
 
@@ -63,12 +64,21 @@ python app.py          # 默认 0.0.0.0:5000
 Nginx 配置见 `deploy/nginx/jiaops.conf`。  
 访问：`http://<虚拟机IP>/` ，健康检查：`/health`
 
-## 本地开发（下一步）
+## Docker Compose（Phase 3）
+
+与裸机并行验证时，默认映射 **宿主机 8080 → 容器 Nginx 80**（不抢占裸机 `:80`）。
 
 ```bash
-docker compose -f deploy/compose/docker-compose.yml up -d
+cd deploy/compose
+cp .env.example .env
+docker compose up -d --build
+
+curl -s http://127.0.0.1:8080/health
+# 浏览器：http://192.168.153.8:8080/
 ```
 
+可选 Redis：`docker compose --profile with-redis up -d`  
+说明见 [`deploy/compose/README.md`](deploy/compose/README.md)。
 ## 知识库
 
 学习笔记存放在 Obsidian：`Jia's DevOps Knowledge Base` → `03 Projects`。
