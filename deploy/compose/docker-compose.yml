@@ -51,8 +51,10 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      # redis 在 profile with-redis 里；required:false 表示没启 profile 时也不报错
       redis:
         condition: service_healthy
+        required: false
     healthcheck:
       test:
         [
