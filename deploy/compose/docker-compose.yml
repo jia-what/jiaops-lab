@@ -34,7 +34,7 @@ services:
     build:
       context: ../../app
       dockerfile: Dockerfile
-    image: jiaops-app:local
+    image: jiaops-app:${APP_TAG:-local}
     container_name: jiaops-app
     restart: unless-stopped
     environment:
