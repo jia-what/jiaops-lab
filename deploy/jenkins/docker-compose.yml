@@ -1,0 +1,24 @@
+name: jiaops-jenkins
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jiaops-jenkins:local
+    container_name: jiaops-jenkins
+    restart: unless-stopped
+    # Docker Socket 默认归 root 所有；仅用于这台受控实验机。
+    group_add:
+      - "${DOCKER_GID}"
+    ports:
+      - "${JENKINS_HOST_PORT:-8081}:8080"
+
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      # 仅提供运行时 .env；Jenkins 从自身 workspace 使用受版本控制的 Compose 文件。
+      - /opt/jiaops-compose:/opt/jiaops-compose:ro
+
+volumes:
+  jenkins_home:
