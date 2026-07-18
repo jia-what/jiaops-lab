@@ -1,15 +1,15 @@
 # CI/CD · Jenkins Pipeline
 
-[`Jenkinsfile`](Jenkinsfile) 是 JiaOps Lab 的单机 CI/CD 流水线定义。
+[`Jenkinsfile`](Jenkinsfile) 是 JiaOps Lab 的单机 CI/CD 流水线定义 。
 
 ```text
-GitHub main
+GitHub phase4（合并 main 前）
   ↓
-Jenkins Checkout
+Jenkins Checkout（工作区代码 → docker build）
   ↓
 Build jiaops-app:build-<build-number>-<git-sha>
   ↓
-docker compose up -d --no-build
+docker compose（宿主机路径 /opt/jiaops-compose）up -d --no-build
   ↓
 容器 Nginx /health 验证
 ```
@@ -18,6 +18,7 @@ docker compose up -d --no-build
 
 - Jenkins 按 [`deploy/jenkins/README.md`](../deploy/jenkins/README.md) 部署。
 - Jenkins 容器已挂载宿主机 `/var/run/docker.sock`，并且镜像内有 Docker CLI 与 Compose 插件。
+- `COMPOSE_FILE` 必须是宿主机路径：`/opt/jiaops-compose/deploy/compose/docker-compose.yml`（勿用 Jenkins workspace 相对路径，否则 nginx bind mount 会失败）。
 - 业务运行时环境文件位于 VM：`/opt/jiaops-compose/deploy/compose/.env`。
 - 业务栈的 Compose project name 保持 `jiaops`，容器名保持 `jiaops-nginx`、`jiaops-app` 等。
 
