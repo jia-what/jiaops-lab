@@ -16,11 +16,11 @@
 
 | | 裸机 MVP | Compose 栈 |
 |--|----------|------------|
-| 访问 | `http://IP/`（:80） | `http://IP:8080/`（默认 `NGINX_HOST_PORT=8080`） |
+| 访问 | `http://IP/`（:80） | 正式运行也是 `http://IP/`（容器 Nginx 接管 :80） |
 | MySQL | 宿主机 `mysqld` | 容器 `jiaops-mysql`（数据在 volume `mysql_data`） |
 | 端口冲突 | 占 80 / 5000 / 3306 | **不占** 80/3306；只占宿主机 `8080` |
 
-验证通过后再停裸机服务，把 `NGINX_HOST_PORT` 改成 `80` 做切换。
+并行验证阶段可把 `NGINX_HOST_PORT` 设为 `8080`；当前正式运行已设为 `80`。
 
 ## 启动
 
@@ -30,7 +30,7 @@ cp .env.example .env               # 按需改密码
 docker compose up -d --build
 
 docker compose ps
-curl -s http://127.0.0.1:8080/health
+curl -s http://127.0.0.1/health
 ```
 
 可选 Redis（app 会连 Redis 缓存工单列表，`/health` 含 redis 状态）：
@@ -38,7 +38,7 @@ curl -s http://127.0.0.1:8080/health
 ```bash
 # .env 中需有 REDIS_HOST=redis（.env.example 已含）
 docker compose --profile with-redis up -d --build
-curl -s http://127.0.0.1:8080/health
+curl -s http://127.0.0.1/health
 # 期望：{"status":"ok","db":1,"redis":"ok",...}
 ```
 
@@ -55,6 +55,16 @@ docker compose down -v       # 停栈并删数据（慎用）
 ## 验收
 
 - [ ] `docker compose ps` 中 mysql / app / nginx 为 healthy 或 running
-- [ ] `curl http://127.0.0.1:8080/health` → `status: ok`
+- [ ] `curl http://127.0.0.1/health` → `status: ok`
 - [ ] 浏览器能建单、改状态
-- [ ] 裸机 `:80` 仍可访问（并行阶段）
+- [ ] 容器 Nginx 已监听宿主机 `:80`
+
+## Jenkins 部署使用的镜像 tag
+
+默认应用镜像是 `jiaops-app:local`。Jenkins Pipeline 构建时会设置 `APP_TAG=build-<构建号>-<Git SHA>`，Compose 因而使用对应的本地镜像：
+
+```bash
+APP_TAG=build-12-a1b2c3d docker compose --profile with-redis up -d --no-build
+```
+
+正式运行时的密码和端口仍来自本目录 `.env`，不要把它提交到 Git。

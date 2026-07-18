@@ -1,6 +1,6 @@
 # CI/CD · Jenkins Pipeline
 
-[`Jenkinsfile`](Jenkinsfile) 是 JiaOps Lab 的单机 CI/CD 流水线定义 。
+[`Jenkinsfile`](Jenkinsfile) 是 JiaOps Lab 的单机 CI/CD 流水线定义。
 
 ```text
 GitHub phase4（合并 main 前）
@@ -41,6 +41,14 @@ docker compose（宿主机路径 /opt/jiaops-compose）up -d --no-build
 - 公开仓库仅需匿名检出；私有仓库改用 Jenkins Credentials 保存 GitHub token/SSH key。
 - Jenkins 读取运行时 `.env` 是为了让 Compose 保持与现网一致，不会把内容打印到构建日志。
 
+## 触发方式
+
+| 方式 | 说明 |
+|------|------|
+| 手动 Build Now | 已验证 |
+| GitHub Webhook | 私网 `192.168.153.8` 公网不可达时 Delivery 失败 |
+| Poll SCM | 实验机采用；Schedule `* * * * *`，`phase4` 有新 commit 即构建 |
+
 ## 本地排查
 
 ```bash
@@ -49,5 +57,3 @@ docker exec jiaops-jenkins docker compose version
 docker exec jiaops-nginx wget -qO- http://127.0.0.1/health
 docker logs --tail 100 jiaops-app
 ```
-
-Webhook 仅在手动构建通过后启用。私网实验机不能被 GitHub 直接访问时，Webhook 不会送达；需要安全的公网入口、VPN 或反向隧道。

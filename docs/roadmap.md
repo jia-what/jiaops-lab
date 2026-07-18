@@ -13,19 +13,28 @@
 - 权限 / 用户 / systemd / 网络 笔记入库
 - 虚拟机初始化脚本固化
 
-## Phase 2 — 容器化
+## Phase 2 — 工单 MVP
 
 - 工单应用 MVP
+- MySQL + Nginx + systemd
+
+## Phase 3 — 容器化
+
 - Docker + Compose + Nginx + MySQL + Redis
 - 一键启动与健康检查
 
-## Phase 3 — 交付与监控
+## Phase 4 — CI/CD
 
-- Jenkins 流水线
+- Jenkins Docker 部署
+- Jenkins 流水线：检出 → 构建本地镜像 → Compose 部署 → `/health`
+- 自动触发：Webhook（需公网）或 Poll SCM（私网实验采用）
+
+## Phase 5 — 监控
+
 - Prometheus + Grafana + Alertmanager
 - 基础告警规则
 
-## Phase 4 — 云原生与 AIOps
+## Phase 6 — 云原生与 AIOps
 
 - Kubernetes 部署
 - Terraform 基础
