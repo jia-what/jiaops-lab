@@ -1,0 +1,21 @@
+# Prometheus 最小配置：先抓自己，证明链路通；告警规则后续步骤再加
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# 告警发到同 Compose 网络里的 Alertmanager（服务名 = 容器 DNS 名）
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# 本步暂无告警规则文件；第 6 步再加 rule_files
+
+scrape_configs:
+  # job 名会出现在指标标签里，方便以后过滤
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090

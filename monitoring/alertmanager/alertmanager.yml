@@ -1,0 +1,15 @@
+# Alertmanager 最小配置：先接住告警，不向外部发通知（null receiver）
+# 第 6 步再配 webhook / 邮件等
+
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: "null"
+  group_by: ["alertname"]
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+
+receivers:
+  - name: "null"
