@@ -1,6 +1,6 @@
 # 运维工单应用（MVP）
 
-最小功能：创建工单、列表、改状态；数据存 MySQL；提供 `/health`。
+最小功能：创建工单、列表、改状态；数据存 MySQL；提供 `/health` 与 Prometheus `/metrics`。
 
 ## 结构
 
@@ -42,6 +42,7 @@ python app.py
 | 方法 | 路径 | 作用 |
 |------|------|------|
 | GET | `/health` | 健康检查（含数据库） |
+| GET | `/metrics` | Prometheus 指标（含 `jiaops_tickets_created_total`） |
 | GET | `/` | 工单页 |
-| POST | `/tickets` | 创建工单 |
+| POST | `/tickets` | 创建工单（成功时计数器 +1） |
 | POST | `/tickets/<id>/status` | 更新状态 |

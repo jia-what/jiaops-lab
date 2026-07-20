@@ -1,0 +1,24 @@
+# Alertmanager 第 7A 步：邮件 → Mailpit；Webhook → webhook-echo
+# 均为实验机本地沙箱，不依赖公网邮箱 / 钉钉
+
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: "mailpit:1025"
+  smtp_from: "alertmanager@jiaops.local"
+  smtp_require_tls: false
+
+route:
+  receiver: "jiaops-notify"
+  group_by: ["alertname"]
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+
+receivers:
+  - name: "jiaops-notify"
+    email_configs:
+      - to: "oncall@jiaops.local"
+        send_resolved: true
+    webhook_configs:
+      - url: "http://webhook-echo:8080/"
+        send_resolved: true

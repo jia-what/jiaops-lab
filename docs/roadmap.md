@@ -2,7 +2,7 @@
 
 对齐学习阶段，边学边往平台上叠能力。
 
-## Phase 0 — 基线（当前）
+## Phase 0 — 基线
 
 - 仓库与目录骨架
 - 知识库项目页
@@ -29,10 +29,18 @@
 - Jenkins 流水线：检出 → 构建本地镜像 → Compose 部署 → `/health`
 - 自动触发：Webhook（需公网）或 Poll SCM（私网实验采用）
 
-## Phase 5 — 监控
+## Phase 5 — 监控（当前）
 
-- Prometheus + Grafana + Alertmanager
-- 基础告警规则
+- [x] 架构 / 端口 / 目录定稿；现网盘点（独立 `monitoring/` Compose）
+- [x] 仓库写入最小 Compose + Prometheus / Grafana / Alertmanager 配置
+- [x] 实验机启动与三端 Web UI 验收（`:9090` / `:3000` / `:9093`）
+- [x] Node Exporter / cAdvisor 抓取（Targets UP）
+- [x] Grafana 数据源与看板（导入 1860）
+- [x] 基础告警规则（TargetDown 验证通过）
+- [x] 告警外发沙箱：Mailpit（邮件）+ webhook-echo（第 7A）
+- [x] 应用 `/metrics` + 建单计数器；Prometheus 接入 `jiaops-net`（第 7B）
+
+详见 [`monitoring/README.md`](../monitoring/README.md)。
 
 ## Phase 6 — 云原生与 AIOps
 

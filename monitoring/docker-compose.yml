@@ -1,0 +1,140 @@
+# JiaOps Lab · Phase 5 监控栈
+# 用法（在本目录）：
+#   cp .env.example .env
+#   docker compose up -d
+# 验收：:9090 / :3000 / :9093 / :9100 / :8082
+
+name: jiaops-monitor
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: jiaops-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    ports:
+      - "${PROMETHEUS_HOST_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    # monitor-net：监控组件互访；jiaops-net：抓业务 app:/metrics（第 7B）
+    networks:
+      - monitor-net
+      - jiaops-net
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: jiaops-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "${GRAFANA_HOST_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # 自动加载数据源（见 grafana/provisioning/）
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - monitor-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: jiaops-alertmanager
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    ports:
+      - "${ALERTMANAGER_HOST_PORT:-9093}:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    depends_on:
+      - mailpit
+      - webhook-echo
+    networks:
+      - monitor-net
+
+  # 本地假邮局：接 Alertmanager 邮件；网页看收件箱（第 7A 步）
+  mailpit:
+    image: axllent/mailpit:v1.21.0
+    container_name: jiaops-mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+      # SMTP 仅给监控网内用，不映射到宿主机也可；映射便于排查
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+    networks:
+      - monitor-net
+
+  # 本地 webhook 回显：Alertmanager POST 会出现在容器日志里
+  webhook-echo:
+    image: mendhak/http-https-echo:31
+    container_name: jiaops-webhook-echo
+    restart: unless-stopped
+    environment:
+      HTTP_PORT: "8080"
+    ports:
+      - "${WEBHOOK_ECHO_HOST_PORT:-8083}:8080"
+    networks:
+      - monitor-net
+
+  # 宿主机指标（CPU / 内存 / 磁盘等）
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: jiaops-node-exporter
+    restart: unless-stopped
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    ports:
+      - "${NODE_EXPORTER_HOST_PORT:-9100}:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitor-net
+
+  # 容器指标（各 container 的 CPU / 内存等）
+  # 官方在 gcr.io；实验机直连超时，改用 DaoCloud 代理拉同一镜像
+  cadvisor:
+    image: m.daocloud.io/gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: jiaops-cadvisor
+
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "${CADVISOR_HOST_PORT:-8082}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - monitor-net
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:
+
+networks:
+  monitor-net:
+    name: jiaops-monitor-net
+  # 业务 Compose 已创建；此处只接入，不新建
+  jiaops-net:
+    external: true
+    name: jiaops-net

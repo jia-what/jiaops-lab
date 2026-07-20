@@ -1,0 +1,44 @@
+# JiaOps Lab · 基础告警规则（第 6 步）
+# Alertmanager 目前为 null receiver：告警会显示在 UI，不外发通知
+
+groups:
+  - name: jiaops.base
+    rules:
+      # 任一 scrape 目标挂了（含 prometheus / node / cadvisor）
+      - alert: TargetDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "抓取目标宕机：{{ $labels.job }} / {{ $labels.instance }}"
+          description: "job={{ $labels.job }} instance={{ $labels.instance }} 已连续 1 分钟 up==0。"
+
+      # 可用内存低于 10%
+      - alert: HostHighMemory
+        expr: |
+          (
+            node_memory_MemAvailable_bytes
+            / node_memory_MemTotal_bytes
+          ) * 100 < 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "宿主机可用内存偏低：{{ $labels.instance }}"
+          description: "可用内存低于 10%，持续超过 2 分钟。"
+
+      # CPU 使用率（非 idle）超过 85%
+      - alert: HostHighCpu
+        expr: |
+          (
+            1 - avg by (instance) (
+              rate(node_cpu_seconds_total{mode="idle"}[5m])
+            )
+          ) * 100 > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "宿主机 CPU 偏高：{{ $labels.instance }}"
+          description: "CPU 使用率超过 85%，持续超过 2 分钟。"
