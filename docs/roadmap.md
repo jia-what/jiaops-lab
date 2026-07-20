@@ -28,23 +28,26 @@
 - Jenkins Docker 部署
 - Jenkins 流水线：检出 → 构建本地镜像 → Compose 部署 → `/health`
 - 自动触发：Webhook（需公网）或 Poll SCM（私网实验采用）
+- 已合并 `main`（PR #2）
 
-## Phase 5 — 监控（当前）
+## Phase 5 — 监控（已完成）
 
 - [x] 架构 / 端口 / 目录定稿；现网盘点（独立 `monitoring/` Compose）
-- [x] 仓库写入最小 Compose + Prometheus / Grafana / Alertmanager 配置
-- [x] 实验机启动与三端 Web UI 验收（`:9090` / `:3000` / `:9093`）
+- [x] Prometheus + Grafana + Alertmanager 最小部署与验收
 - [x] Node Exporter / cAdvisor 抓取（Targets UP）
-- [x] Grafana 数据源与看板（导入 1860）
-- [x] 基础告警规则（TargetDown 验证通过）
-- [x] 告警外发沙箱：Mailpit（邮件）+ webhook-echo（第 7A）
-- [x] 应用 `/metrics` + 建单计数器；Prometheus 接入 `jiaops-net`（第 7B）
+- [x] Grafana 数据源与看板（导入 1860；可自建业务 Panel）
+- [x] 基础告警规则（TargetDown 等）
+- [x] 告警外发沙箱：Mailpit + webhook-echo（真邮箱 SMTP 可另配）
+- [x] 应用 `/metrics` + 建单计数器；Prometheus 接入 `jiaops-net`
+- 已合并 `main`（PR #3 · `c04139e`）
 
 详见 [`monitoring/README.md`](../monitoring/README.md)。
 
-## Phase 6 — 云原生与 AIOps
+## Phase 6 — Kubernetes（当前）
 
-- Kubernetes 部署
-- Terraform 基础
-- AI 辅助故障诊断
-- 云厂商实践（阿里云 / 腾讯云）
+- [ ] 本地集群（建议 kind）与最小清单
+- [ ] 先迁 app；MySQL / Redis 暂留 Compose
+- [ ] Service / NodePort → Ingress；探针与配置
+- [ ] 与 Compose 版对照文档
+
+其后：上云、Terraform、AIOps（原 Phase 6/7/8 能力继续后移）。
