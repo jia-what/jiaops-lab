@@ -5,7 +5,8 @@ from datetime import datetime
 import pymysql
 import redis
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, Response, redirect, render_template, request, url_for
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 
 load_dotenv()
 
@@ -15,6 +16,12 @@ PRIORITIES = ("low", "medium", "high", "critical")
 STATUSES = ("open", "in_progress", "resolved", "closed")
 TICKETS_CACHE_KEY = "jiaops:tickets:list"
 TICKETS_CACHE_TTL = 30
+
+# Prometheus：建单次数（进程内累计；容器重建后从 0 再计）
+TICKETS_CREATED = Counter(
+    "jiaops_tickets_created_total",
+    "Total tickets created via the web form",
+)
 
 
 def get_db():
@@ -131,6 +138,12 @@ def health():
     return body, 200
 
 
+@app.get("/metrics")
+def metrics():
+    """供 Prometheus 抓取；含进程默认指标 + jiaops_tickets_created_total。"""
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+
 @app.get("/")
 def index():
     tickets = fetch_tickets()
@@ -164,6 +177,7 @@ def create_ticket():
         )
     conn.close()
     invalidate_tickets_cache()
+    TICKETS_CREATED.inc()
     return redirect(url_for("index"))
 
 

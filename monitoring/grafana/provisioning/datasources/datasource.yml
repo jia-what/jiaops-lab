@@ -1,0 +1,12 @@
+# Grafana 自动加载的数据源（容器重建后仍在）
+# URL 用 Compose 服务名，走 jiaops-monitor-net，不要写宿主机 IP
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true

@@ -33,9 +33,12 @@
 
 - [x] 架构 / 端口 / 目录定稿；现网盘点（独立 `monitoring/` Compose）
 - [x] 仓库写入最小 Compose + Prometheus / Grafana / Alertmanager 配置
-- [ ] 实验机启动与三端 Web UI 验收
-- [ ] 节点 / 容器抓取与 Grafana 看板
-- [ ] Alertmanager 基础告警规则
+- [x] 实验机启动与三端 Web UI 验收（`:9090` / `:3000` / `:9093`）
+- [x] Node Exporter / cAdvisor 抓取（Targets UP）
+- [x] Grafana 数据源与看板（导入 1860）
+- [x] 基础告警规则（TargetDown 验证通过）
+- [x] 告警外发沙箱：Mailpit（邮件）+ webhook-echo（第 7A）
+- [x] 应用 `/metrics` + 建单计数器；Prometheus 接入 `jiaops-net`（第 7B）
 
 详见 [`monitoring/README.md`](../monitoring/README.md)。
 

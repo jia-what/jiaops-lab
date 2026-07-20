@@ -1,15 +1,24 @@
-# Alertmanager 最小配置：先接住告警，不向外部发通知（null receiver）
-# 第 6 步再配 webhook / 邮件等
+# Alertmanager 第 7A 步：邮件 → Mailpit；Webhook → webhook-echo
+# 均为实验机本地沙箱，不依赖公网邮箱 / 钉钉
 
 global:
   resolve_timeout: 5m
+  smtp_smarthost: "mailpit:1025"
+  smtp_from: "alertmanager@jiaops.local"
+  smtp_require_tls: false
 
 route:
-  receiver: "null"
+  receiver: "jiaops-notify"
   group_by: ["alertname"]
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 1h
 
 receivers:
-  - name: "null"
+  - name: "jiaops-notify"
+    email_configs:
+      - to: "oncall@jiaops.local"
+        send_resolved: true
+    webhook_configs:
+      - url: "http://webhook-echo:8080/"
+        send_resolved: true
